@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+NS=socrata
+PROJ=$(basename $DIR)
+NAME=${1:-all}
+shift
+
+
+case $NAME in
+    all )
+        echo "Not yet implemented." && exit 1 ;;
+    opendj )
+        docker run -t -i -p 1636:1636 -p 1389:1389 -p 4444:4444 --rm --name ${NAME}_1 --volumes-from ${PROJ}_data_1 ${NS}/${NAME} $@ ;;
+    data )
+        docker run -i -t --rm --name ${PROJ}_${NAME}_1 ${NS}/${PROJ}_${NAME} $@ ;;
+    * )
+        echo "ERROR: Not a valid image: ${NAME}" || exit 1 ;;
+esac
