@@ -13,10 +13,11 @@ Download OpenDJ-2.6.0 to opendj/OpenDJ-2.6.0.zip
 
 ### Running opendj in development:
 
-    bin/run data              # launch a data container
-    bin/run ldap              # launch an opendj ldap container
+    bin/run [service]   # launch data and/or opendj containers
 
 ### Importing LDIFs:
+
+The simplest aproach is to import remotely (e.g. via Apache Directory Studio). Alternatively, you can import LDIFs by injecting them into the data container:
 
     # Add LDIFs to /data/opendj/ldif/
     cat sample.ldif | docker exec -i data sh -c 'cat > /data/opendj/ldif/sample.ldif'

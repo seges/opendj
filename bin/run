@@ -5,17 +5,28 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 NS=socrata
 PROJ=$(basename $DIR)
-NAME=${1:-all}
-shift
+NAMES=${1:-data opendj}
+shift || true
 
+# Default to daemon if no container args are specified
+DEFAULT_RUN_OPTS="-d";
+test -z "$1" || DEFAULT_RUN_OPTS="--rm -i -t"
+RUN_OPTS=${RUN_OPTS:-$DEFAULT_RUN_OPTS}
 
-case $NAME in
-    all )
-        echo "Not yet implemented." && exit 1 ;;
+function run_image {
+  local name=$1
+  shift || true
+
+  case $name in
     opendj )
-        docker run -t -i -p 1636:1636 -p 1389:1389 -p 4444:4444 --rm --name ${NAME}_1 --volumes-from ${PROJ}_data_1 ${NS}/${NAME} $@ ;;
+      docker run $RUN_OPTS -p 1636:1636 -p 1389:1389 -p 4444:4444 --name ${name}_1 --volumes-from ${PROJ}_data_1 ${NS}/${name} $@ ;;
     data )
-        docker run -i -t --rm --name ${PROJ}_${NAME}_1 ${NS}/${PROJ}_${NAME} $@ ;;
+      docker run $RUN_OPTS --name ${PROJ}_${name}_1 ${NS}/${PROJ}_${name} ;;
     * )
-        echo "ERROR: Not a valid image: ${NAME}" || exit 1 ;;
-esac
+      echo "ERROR: Not a valid image: ${name}" || exit 1 ;;
+  esac
+}
+
+for image in $NAMES; do
+  run_image $image $@
+done

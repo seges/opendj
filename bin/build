@@ -5,17 +5,19 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 NS=socrata
 PROJ=$(basename $DIR)
-NAMES=$@
-NAMES=${NAMES:-data opendj}
+BUILD_DIRS=$@
+BUILD_DIRS=${BUILD_DIRS:-data opendj}
 
 function build_image() {
-  local name=$1
-  local tag=${PROJ}_${name}
-  if [ $PROJ = $name ]; then tag=$name; fi
-  docker build -t ${NS}/$tag $DIR/$name
+  local subdir=$1
+  local tag=${PROJ}_${subdir}
+
+  if [ $PROJ = $subdir ] || [ $subdir = . ]; then tag=$PROJ; fi
+
+  docker build $BUILD_OPTS -t ${NS}/$tag $DIR/$subdir
 }
 
-for name in $NAMES; do
-  echo "Building ${name}..."
-  build_image $name
+for subdir in $BUILD_DIRS; do
+  echo "Building ${subdir}..."
+  build_image $subdir
 done
