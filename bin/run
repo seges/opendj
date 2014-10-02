@@ -19,7 +19,7 @@ function run_image {
 
   case $name in
     opendj )
-      docker run $RUN_OPTS -p 1636:1636 -p 1389:1389 -p 4444:4444 --name ${name}_1 --volumes-from ${PROJ}_data_1 ${NS}/${name} $@ ;;
+      docker run $RUN_OPTS -p 1636:1636 -p 1389:1389 -p 4444:4444 --volumes-from ${PROJ}_data_1 ${NS}/${name} $@ ;;
     data )
       docker run $RUN_OPTS --name ${PROJ}_${name}_1 ${NS}/${PROJ}_${name} ;;
     * )
