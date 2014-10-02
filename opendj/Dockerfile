@@ -3,8 +3,8 @@ FROM ubuntu:trusty
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && apt-get -y upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install openjdk-7-jre-headless unzip
 
-ADD OpenDJ-2.6.0.zip /opt/
-RUN cd /opt/ && unzip OpenDJ-2.6.0.zip
+ADD https://socrata-oss.ci.cloudbees.com/job/opendj/lastSuccessfulBuild/org.forgerock.opendj$opendj-server/artifact/org.forgerock.opendj/opendj-server/2.6.0/opendj-server-2.6.0.zip /opt/
+RUN cd /opt/ && unzip opendj-server-2.6.0.zip
 
 ENV ROOT_USER_DN cn=Directory\ Manager
 ENV ROOT_USER_PASS passpass
@@ -19,7 +19,7 @@ RUN ./setup --cli -v \
   --rootUserPassword $ROOT_USER_PASS \
   --generateSelfSignedCertificate \
   --no-prompt --noPropertiesFile \
-  --doNotStart --acceptLicense
+  --doNotStart
 
 ADD start /start
 ENTRYPOINT ["/start"]
