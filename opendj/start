@@ -6,38 +6,23 @@ COMMAND=${1:-start}
 
 ulimit -n 10240
 
-function link_config {
-    local link=/opt/opendj/config/config.ldif
-    local target=/data/opendj/config/config.ldif
+function persist_dir {
+    local link=/opt/opendj/$1
+    local target=/data/opendj/$1
     if [ -d /data ] && [ ! -L $link ]; then
-        echo "Linking opendj config..."
-        if [ ! -f $target ]; then
-            mkdir -p $(dirname $target)
+        if [ ! -d $target ]; then
+            echo "Configuring persistence of opendj/$1..."
+            mkdir -p `dirname $target`
             mv $link $target
+        else
+            echo "Restoring persisted opendj/$1..."
+            rm -rf $link
         fi
+
         ln -f -s $target $link
     fi
 }
 
-function link_db {
-    local link=/opt/opendj/db
-    local target=/data/opendj/db
-    if [ -d /data ] && [ ! -L $link ]; then
-        echo "Linking opendj db..."
-        rmdir $link
-        mkdir -p $target
-        ln -f -s $target $link
-    fi
-}
-
-function link_schema {
-    local link_dir=/opt/opendj/config/schema
-    local target_dir=/data/opendj/schema
-    if [ -d $target_dir ]; then
-        echo "Linking opendj schemas... [deprecating soon: ADD schemas to image from the Dockerfile]"
-        ln -f -s $target_dir/* $link_dir/
-    fi
-}
 
 function import_ldifs {
     LDIF_DIR=/data/opendj/ldif
@@ -58,28 +43,28 @@ function import_ldifs {
     fi
 }
 
-link_schema # TODO: deprecate schema linking; build schemas into the image
-link_config
-link_db
+
+for directory in db config logs bak; do
+    persist_dir $directory
+done
+
 
 case $COMMAND in
     start )
-        bin/start-ds --nodetach ;;
-    daemon )
-        bin/start-ds ;;
+        /opt/opendj/bin/start-ds --nodetach ;;
     passwd )
         echo "not yet supported" || exit 1 ;;
     configure )
-        bin/start-ds
+        /opt/opendj/bin/start-ds
         echo "Creating userRoot backend with base-dn:$BASE_DN"
-        bin/dsconfig create-backend --backend-name userRoot --type=local-db --set base-dn:$BASE_DN --set enabled:true --noPropertiesFile --no-prompt -p 4444 --trustAll -D "$ROOT_USER_DN" -w $ROOT_USER_PASS
-        bin/stop-ds
+        /opt/opendj/bin/dsconfig create-backend --backend-name userRoot --type=local-db --set base-dn:$BASE_DN --set enabled:true --noPropertiesFile --no-prompt -p 4444 --trustAll -D "$ROOT_USER_DN" -w $ROOT_USER_PASS
+        /opt/opendj/bin/stop-ds
         echo "Complete."
         ;;
     import )
-        bin/start-ds
+        /opt/opendj/bin/start-ds
         import_ldifs
-        bin/stop-ds
+        /opt/opendj/bin/stop-ds
         ;;
     shell )
         /bin/bash ;;
