@@ -1,0 +1,6 @@
+= Build
+
+[source, bash]
+----
+docker build --rm -f Dockerfile_2.6.0 -t seges/opendj:2.6.0 .
+----
